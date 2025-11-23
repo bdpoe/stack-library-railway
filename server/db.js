@@ -1,13 +1,12 @@
-import {createPool} from 'mysql2/promise'
+import mysql from "mysql2/promise";
+import { config } from "dotenv";
 
-export const pool =  createPool({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'admin',
-    database: 'biblioteca'
+config();
 
-
-})
-
-pool.query
+export const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+});
