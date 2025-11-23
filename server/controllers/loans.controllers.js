@@ -1,10 +1,9 @@
-// server/controllers/loans.controllers.js
 import { pool } from "../db.js";
 
-// ✅ GET /loans - listar todos los préstamos
+// GET ALL LOANS
 export const getLoans = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM loans");
+    const [rows] = await pool.query("SELECT * FROM loans ORDER BY created_at DESC");
     res.json(rows);
   } catch (error) {
     console.error("Error getLoans:", error);
@@ -12,7 +11,7 @@ export const getLoans = async (req, res) => {
   }
 };
 
-// ✅ GET /loans/:id - obtener un préstamo por id
+// GET ONE LOAN
 export const getLoan = async (req, res) => {
   try {
     const { id } = req.params;
@@ -29,62 +28,48 @@ export const getLoan = async (req, res) => {
   }
 };
 
-// ✅ POST /loans - crear préstamo
+// CREATE LOAN
 export const createLoan = async (req, res) => {
   try {
-    const { bookTitle, studentName, startDate, endDate, status } = req.body;
+    const { student, book, date_loan, date_return } = req.body;
 
-    // Validaciones básicas
-    if (!bookTitle || !studentName || !startDate || !endDate) {
+    if (!student || !book || !date_loan) {
       return res.status(400).json({
-        message:
-          "Faltan datos: bookTitle, studentName, startDate, endDate son obligatorios",
+        message: "student, book y date_loan son obligatorios",
       });
     }
 
-    const loanStatus = status || "activo";
-
     const [result] = await pool.query(
-      "INSERT INTO loans (bookTitle, studentName, startDate, endDate, status) VALUES (?, ?, ?, ?, ?)",
-      [bookTitle, studentName, startDate, endDate, loanStatus]
+      "INSERT INTO loans (student, book, date_loan, date_return) VALUES (?, ?, ?, ?)",
+      [student, book, date_loan, date_return]
     );
 
-    const newLoan = {
+    res.json({
       id: result.insertId,
-      bookTitle,
-      studentName,
-      startDate,
-      endDate,
-      status: loanStatus,
-    };
-
-    res.status(201).json(newLoan);
+      student,
+      book,
+      date_loan,
+      date_return,
+      returned: false,
+    });
   } catch (error) {
     console.error("Error createLoan:", error);
     res.status(500).json({ message: "Error al crear préstamo" });
   }
 };
 
-// ✅ PUT /loans/:id - actualizar préstamo
+// UPDATE LOAN
 export const updateLoan = async (req, res) => {
   try {
     const { id } = req.params;
-    const { bookTitle, studentName, startDate, endDate, status } = req.body;
 
-    const [result] = await pool.query(
-      `UPDATE loans 
-       SET bookTitle = IFNULL(?, bookTitle),
-           studentName = IFNULL(?, studentName),
-           startDate = IFNULL(?, startDate),
-           endDate = IFNULL(?, endDate),
-           status = IFNULL(?, status)
-       WHERE id = ?`,
-      [bookTitle, studentName, startDate, endDate, status, id]
-    );
+    const [result] = await pool.query("UPDATE loans SET ? WHERE id = ?", [
+      req.body,
+      id,
+    ]);
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ message: "Préstamo no encontrado" });
-    }
 
     const [rows] = await pool.query("SELECT * FROM loans WHERE id = ?", [id]);
     res.json(rows[0]);
@@ -94,38 +79,36 @@ export const updateLoan = async (req, res) => {
   }
 };
 
-// ✅ PUT /loans/:id/return - marcar como devuelto
+// MARK AS RETURNED
 export const returnLoan = async (req, res) => {
   try {
     const { id } = req.params;
 
     const [result] = await pool.query(
-      "UPDATE loans SET status = 'devuelto' WHERE id = ?",
+      "UPDATE loans SET returned = TRUE WHERE id = ?",
       [id]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ message: "Préstamo no encontrado" });
-    }
 
     const [rows] = await pool.query("SELECT * FROM loans WHERE id = ?", [id]);
     res.json(rows[0]);
   } catch (error) {
     console.error("Error returnLoan:", error);
-    res.status(500).json({ message: "Error al marcar préstamo como devuelto" });
+    res.status(500).json({ message: "Error al marcar como devuelto" });
   }
 };
 
-// ✅ DELETE /loans/:id - eliminar préstamo
+// DELETE LOAN
 export const deleteLoan = async (req, res) => {
   try {
     const { id } = req.params;
 
     const [result] = await pool.query("DELETE FROM loans WHERE id = ?", [id]);
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0)
       return res.status(404).json({ message: "Préstamo no encontrado" });
-    }
 
     res.json({ message: "Préstamo eliminado" });
   } catch (error) {

@@ -1,52 +1,46 @@
-// server/controllers/task.controllers.js
 import { pool } from "../db.js";
-//trycatch para evitar los errores
 
+// GET ALL TASKS
 export const getTasks = async (req, res) => {
   try {
-    const [result] = await pool.query(
-      "SELECT * FROM task ORDER BY createAt ASC"
-    );
-    res.json(result);
+    const [rows] = await pool.query("SELECT * FROM tasks ORDER BY created_at ASC");
+    res.json(rows);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error getTasks:", error);
+    res.status(500).json({ message: "Error al obtener tareas" });
   }
 };
 
+// GET ONE TASK
 export const getTask = async (req, res) => {
   try {
-    const [result] = await pool.query("SELECT * FROM task WHERE id = ?", [
-      req.params.id,
-    ]);
-    if (result.length === 0)
-      return res.status(404).json({ message: "task not found" });
+    const { id } = req.params;
+    const [rows] = await pool.query("SELECT * FROM tasks WHERE id = ?", [id]);
 
-    res.json(result[0]);
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Tarea no encontrada" });
+
+    res.json(rows[0]);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error getTask:", error);
+    res.status(500).json({ message: "Error al obtener tarea" });
   }
 };
 
+// CREATE TASK
 export const createTasks = async (req, res) => {
   try {
     const { title, description } = req.body;
 
-    // 🔥 VALIDACIÓN BACKEND: no permitir campos vacíos
-    if (!title || !title.trim()) {
-      return res.status(400).json({ message: "El título es obligatorio." });
-    }
-
-    if (!description || !description.trim()) {
-      return res
-        .status(400)
-        .json({ message: "La descripción es obligatoria." });
+    if (!title?.trim() || !description?.trim()) {
+      return res.status(400).json({ message: "Título y descripción requeridos" });
     }
 
     const cleanTitle = title.trim();
     const cleanDescription = description.trim();
 
     const [result] = await pool.query(
-      "INSERT INTO task(title, description) VALUES (?, ?)",
+      "INSERT INTO tasks (title, description) VALUES (?, ?)",
       [cleanTitle, cleanDescription]
     );
 
@@ -56,33 +50,42 @@ export const createTasks = async (req, res) => {
       description: cleanDescription,
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error createTasks:", error);
+    res.status(500).json({ message: "Error al crear tarea" });
   }
 };
 
+// UPDATE TASK
 export const updateTasks = async (req, res) => {
   try {
-    const result = await pool.query("UPDATE task SET ? WHERE id = ?", [
+    const { id } = req.params;
+    const [result] = await pool.query("UPDATE tasks SET ? WHERE id = ?", [
       req.body,
-      req.params.id,
+      id,
     ]);
 
-    res.json(result);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ message: "Tarea no encontrada" });
+
+    res.json({ message: "Actualizada correctamente" });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error updateTasks:", error);
+    res.status(500).json({ message: "Error al actualizar tarea" });
   }
 };
 
+// DELETE TASK
 export const deleteTasks = async (req, res) => {
   try {
-    const [result] = await pool.query("DELETE FROM task WHERE id = ?", [
-      req.params.id,
-    ]);
-    if (result.affectedRows === 0)
-      return res.status(404).json({ message: "Task not found" });
+    const { id } = req.params;
+    const [result] = await pool.query("DELETE FROM tasks WHERE id = ?", [id]);
 
-    return res.sendStatus(204);
+    if (result.affectedRows === 0)
+      return res.status(404).json({ message: "Tarea no encontrada" });
+
+    res.sendStatus(204);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error deleteTasks:", error);
+    res.status(500).json({ message: "Error al eliminar tarea" });
   }
 };
