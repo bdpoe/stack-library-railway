@@ -8,11 +8,12 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); 
-  // user = { id, name, role }
+  const [user, setUser] = useState(null);
+
+  const API = import.meta.env.VITE_API_URL; // 👈 IMPORTANTE
 
   const login = async (name, password) => {
-    const res = await axios.post("http://localhost:4000/login", {
+    const res = await axios.post(`${API}/login`, {
       name,
       password,
     });

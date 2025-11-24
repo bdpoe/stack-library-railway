@@ -8,28 +8,30 @@ export const useLoans = () => useContext(LoansContext);
 export function LoansProvider({ children }) {
   const [loans, setLoans] = useState([]);
 
+  const API = import.meta.env.VITE_API_URL;
+
   const loadLoans = async () => {
-    const res = await axios.get("http://localhost:4000/loans");
+    const res = await axios.get(`${API}/loans`);
     setLoans(res.data);
   };
 
   const createLoan = async (loan) => {
-    const res = await axios.post("http://localhost:4000/loans", loan);
+    const res = await axios.post(`${API}/loans`, loan);
     setLoans([...loans, res.data]);
   };
 
   const updateLoan = async (id, updates) => {
-    await axios.put(`http://localhost:4000/loans/${id}`, updates);
+    await axios.put(`${API}/loans/${id}`, updates);
     loadLoans();
   };
 
   const returnLoan = async (id) => {
-    await axios.put(`http://localhost:4000/loans/${id}/return`);
+    await axios.put(`${API}/loans/${id}/return`);
     loadLoans();
   };
 
   const deleteLoan = async (id) => {
-    await axios.delete(`http://localhost:4000/loans/${id}`);
+    await axios.delete(`${API}/loans/${id}`);
     setLoans(loans.filter((loan) => loan.id !== id));
   };
 
