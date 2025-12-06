@@ -4,31 +4,30 @@ config();
 
 let pool;
 
-// --- Si Railway proporciona DATABASE_URL (producción) ---
-if (process.env.DATABASE_URL) {
+// --- Producción: Railway ---
+if (process.env.DB_HOST) {
   pool = mysql.createPool({
-    uri: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false, // Railway requiere esto
-    },
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    port: 3306, // Railway siempre usa 3306 internamente
   });
-  console.log("🔗 Conectado a MySQL en Railway (SSL activado)");
+
+  console.log("🔗 Conectado a MySQL en Railway");
 }
 
-// --- Caso contrario, usar variables locales ---
+// --- Desarrollo local ---
 else {
   pool = mysql.createPool({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "railway",
-    port: process.env.DB_PORT || 3306,
+    host: "localhost",
+    user: "root",
+    password: "",
+    database: "railway",
+    port: 3306,
   });
 
   console.log("🖥 Conectado a MySQL local");
 }
 
-export { pool };   
-
-
-
+export { pool };
