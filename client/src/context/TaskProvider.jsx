@@ -62,13 +62,16 @@ export const TaskContextProvider = ({ children }) => {
     }
   };
 
-  const toggleTaskDone = async (id) => { //actualizacion
+  const toggleTaskDone = async (id) => {
+    //actualizacion
     try {
       const taskFound = tasks.find((task) => task.id === id);
       await toggleTaskDoneRequest(id, taskFound.done === 0 ? true : false);
+      if (!Array.isArray(tasks)) return;
+
       setTasks(
         tasks.map((task) =>
-        task.id === id ? (task.done = task.done === 0 ? 1 : 0) : task.done
+          task.id === id ? (task.done = task.done === 0 ? 1 : 0) : task.done
         )
       );
       setTasks([...tasks]);
@@ -77,8 +80,6 @@ export const TaskContextProvider = ({ children }) => {
     }
   };
 
-
-  
   return (
     <TaskContext.Provider
       value={{

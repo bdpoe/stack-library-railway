@@ -16,7 +16,9 @@ function TasksPage() {
           Aún no hay libros en la biblioteca 📚
         </h1>
       );
-    return tasks.map((task) => <Taskcard task={task} key={task.id} />);
+if (!Array.isArray(tasks)) return <p>No hay tareas disponibles.</p>;
+
+return tasks.map((task) => <Taskcard task={task} key={task.id} />);
   }
 
   return (

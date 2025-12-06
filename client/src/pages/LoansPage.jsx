@@ -2,10 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import LoanCard from "../components/LoanCard";
-import {
-  getLoansRequest,
-  deleteLoanRequest,
-} from "../api/loans.api";
+import { getLoansRequest, deleteLoanRequest } from "../api/loans.api";
 
 function LoansPage() {
   const [loans, setLoans] = useState([]);
@@ -66,15 +63,14 @@ function LoansPage() {
       )}
 
       {loans.length === 0 ? (
-        <p className="text-slate-600">
-          Todavía no hay préstamos registrados.
-        </p>
+        <p className="text-slate-600">Todavía no hay préstamos registrados.</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loans.map((loan) => (
-            // 👇 key con loan.id (MySQL)
-            <LoanCard key={loan.id} loan={loan} onDelete={handleDelete} />
-          ))}
+          {Array.isArray(loans) &&
+            loans.map((loan) => (
+              // 👇 key con loan.id (MySQL)
+              <LoanCard key={loan.id} loan={loan} onDelete={handleDelete} />
+            ))}
         </div>
       )}
     </section>
