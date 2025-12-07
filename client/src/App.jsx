@@ -123,7 +123,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-b from-sky-100 via-sky-150 to-emerald-50 text-slate-800 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-sky-100 via-sky-200 to-emerald-50 text-slate-800 flex flex-col">
         <Navbar />
 
         <div className="flex-grow container mx-auto px-4 md:px-10 py-8">
