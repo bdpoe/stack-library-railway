@@ -13,7 +13,6 @@ function Navbar() {
   return (
     <nav className="bg-sky-600 shadow-md backdrop-blur-sm">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3">
-
         {/* Logo */}
         <Link
           to="/"
@@ -22,14 +21,12 @@ function Navbar() {
           🕮 <span>Biblioteca Escolar</span>
         </Link>
 
-        {/* Si no hay usuario (no logueado), no mostrar nada */}
+        {/* Sin usuario → nada más */}
         {!user && <div></div>}
 
-        {/* Si hay usuario */}
         {user && (
           <ul className="flex gap-3 items-center">
-
-            {/* Inicio visible para todos */}
+            {/* Inicio */}
             <li>
               <Link
                 to="/"
@@ -39,31 +36,54 @@ function Navbar() {
               </Link>
             </li>
 
-            {/* Solo bibliotecario puede agregar libro */}
+            {/* 🔵 SOLO BIBLIOTECARIO */}
             {user.role === "librarian" && (
+              <>
+                {/* Ver préstamos */}
+                <li>
+                  <Link
+                    to="/loans"
+                    className="bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-indigo-600 transition-colors duration-200"
+                  >
+                    Préstamos
+                  </Link>
+                </li>
+
+                {/* Agregar préstamo */}
+                <li>
+                  <Link
+                    to="/loans/new"
+                    className="bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-emerald-600 transition-colors duration-200"
+                  >
+                    + Nuevo Préstamo
+                  </Link>
+                </li>
+
+                {/* (Opcional) gestionar tareas */}
+                <li>
+                  <Link
+                    to="/tasks"
+                    className="bg-sky-500 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-sky-600 transition-colors duration-200"
+                  >
+                    Tareas
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* 🟢 SOLO ESTUDIANTE */}
+            {user.role === "student" && (
               <li>
                 <Link
-                  to="/new"
-                  className="bg-emerald-400 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-emerald-500 transition-colors duration-200"
+                  to="/tasks"
+                  className="bg-sky-500 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-sky-600 transition-colors duration-200"
                 >
-                  Agregar Libro
+                  Mis Tareas
                 </Link>
               </li>
             )}
 
-            {/* Botón de préstamos (solo bibliotecario) */}
-            {user.role === "librarian" && (
-              <li>
-                <Link
-                  to="/loans"
-                  className="bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-full shadow-sm hover:bg-indigo-600 transition-colors duration-200"
-                >
-                  Préstamos
-                </Link>
-              </li>
-            )}
-
-            {/* Cerrar sesión */}
+            {/* Logout */}
             <li>
               <button
                 onClick={handleLogout}
@@ -72,10 +92,8 @@ function Navbar() {
                 Cerrar Sesión
               </button>
             </li>
-
           </ul>
         )}
-
       </div>
     </nav>
   );
