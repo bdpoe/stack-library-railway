@@ -16,7 +16,7 @@ import LoanForm from "./pages/LoanForm";
 function LibrarianRoute({ children }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== "librarian") return <Navigate to="/" />; // Estudiante no puede entrar
+  if (user.role !== "librarian") return <Navigate to="/" />;
   return children;
 }
 
@@ -43,20 +43,42 @@ function AppRoutes() {
             !user ? (
               <Navigate to="/login" />
             ) : user.role === "librarian" ? (
-              <>
-                {/* Home del bibliotecario */}
-                <LoansPage />
-              </>
+              <LoansPage />
             ) : (
-              <>
-                {/* Home del estudiante */}
-                <TasksPage />
-              </>
+              <TasksPage />
             )
           }
         />
 
-        {/* 📚 LOANS — Solo bibliotecario */}
+        {/* 📚 LIBROS (TASKS) */}
+        <Route
+          path="/tasks"
+          element={
+            <PrivateRoute>
+              <TasksPage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/tasks/new"
+          element={
+            <LibrarianRoute>
+              <TasksForm />
+            </LibrarianRoute>
+          }
+        />
+
+        <Route
+          path="/tasks/edit/:id"
+          element={
+            <LibrarianRoute>
+              <TasksForm />
+            </LibrarianRoute>
+          }
+        />
+
+        {/* 📖 PRÉSTAMOS (solo bibliotecario) */}
         <Route
           path="/loans"
           element={
@@ -84,35 +106,6 @@ function AppRoutes() {
           }
         />
 
-        {/* 📝 TASKS — Estudiante y bibliotecario pueden ver */}
-        <Route
-          path="/tasks"
-          element={
-            <PrivateRoute>
-              <TasksPage />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Crear/Editar tareas — SOLO bibliotecario */}
-        <Route
-          path="/tasks/new"
-          element={
-            <LibrarianRoute>
-              <TasksForm />
-            </LibrarianRoute>
-          }
-        />
-
-        <Route
-          path="/tasks/edit/:id"
-          element={
-            <LibrarianRoute>
-              <TasksForm />
-            </LibrarianRoute>
-          }
-        />
-
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -123,14 +116,14 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-gradient-to-b from-sky-100 via-sky-200 to-emerald-50 text-slate-800 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-bfrom-amber-50 via-amber-100 to-stone-100 text-slate-800 flex flex-col">
         <Navbar />
 
-        <div className="flex-grow container mx-auto px-4 md:px-10 py-8">
+        <div className="flex-growcontainer mx-auto px-4 md:px-10 py-8">
           <AppRoutes />
         </div>
 
-        <footer className="text-center py-4 text-slate-500 text-xs md:text-sm border-t border-sky-100 bg-white/60 backdrop-blur"></footer>
+        <footer className="text-center py-4 text-stone-500 text-xs md:text-sm border-t border-amber-100 bg-white/70 backdrop-blur"></footer>
       </div>
     </AuthProvider>
   );
