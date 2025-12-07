@@ -10,11 +10,11 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  const API = import.meta.env.VITE_API_URL; // 👈 IMPORTANTE
+  const API = import.meta.env.VITE_API_URL;
 
   const login = async (name, password) => {
     const res = await axios.post(`${API}/login`, {
-      username: name,
+      name,     // 👈 CORRECTO: ahora coinciden frontend + backend + MySQL
       password,
     });
     setUser(res.data);
