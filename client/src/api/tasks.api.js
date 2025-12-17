@@ -1,20 +1,32 @@
+// src/api/tasks.api.js
 import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL;
 
-export const getTaskRequest = () => axios.get(`${API}/tasks`);
+// Obtener todos los libros
+export const getTasksRequest = () =>
+  axios.get(`${API}/tasks`);
 
+// Obtener solo libros disponibles
+export const getAvailableTasksRequest = () =>
+  axios.get(`${API}/tasks?available=true`);
+
+// Crear libro
 export const createTaskRequest = (task) =>
   axios.post(`${API}/tasks`, task);
 
+// Obtener libro por ID
+export const getTaskRequest = (id) =>
+  axios.get(`${API}/tasks/${id}`);
+
+// Actualizar libro
+export const updateTaskRequest = (id, task) =>
+  axios.put(`${API}/tasks/${id}`, task);
+
+// Eliminar libro
 export const deleteTaskRequest = (id) =>
   axios.delete(`${API}/tasks/${id}`);
 
-export const getTasksRequest = (id) =>
-  axios.get(`${API}/tasks/${id}`);
-
-export const updateTaskRequest = (id, newFields) =>
-  axios.put(`${API}/tasks/${id}`, newFields);
-
-export const toggleTaskDoneRequest = (id, done) =>
-  axios.put(`${API}/tasks/${id}`, { done });
+// 🔁 CAMBIAR ESTADO (PRESTADO / DISPONIBLE)
+export const toggleTaskRequest = (id) =>
+  axios.put(`${API}/tasks/${id}/toggle`);

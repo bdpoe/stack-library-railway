@@ -1,22 +1,40 @@
 import mysql from "mysql2/promise";
-import { config } from "dotenv";
-config();
+import dotenv from "dotenv";
 
-let pool;
+dotenv.config();
 
-try {
-  pool = mysql.createPool({
-    host: process.env.MYSQLHOST,
-    user: process.env.MYSQLUSER,
-    password: process.env.MYSQLPASSWORD,
-    port: process.env.MYSQLPORT,
-    database: process.env.MYSQLDATABASE,
-    ssl: { rejectUnauthorized: false }
-  });
+// Detecta si estamos en Railway (producción)
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
 
-  console.log("🔗 Conectado a MySQL en Railway");
-} catch (err) {
-  console.error("❌ Error al conectar a MySQL", err);
-}
+// Creamos el pool de conexiones
+const pool = mysql.createPool({
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  port: Number(process.env.MYSQLPORT),
+  database: process.env.MYSQLDATABASE,
 
-export { pool };
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+
+  // SSL solo en Railway
+  ssl: isRailway
+    ? { rejectUnauthorized: false }
+    : false,
+});
+
+// Test de conexión (no bloqueante)
+(async () => {
+  try {
+    const connection = await pool.getConnection();
+    console.log(
+      `🔗 MySQL conectado correctamente (${isRailway ? "Railway" : "Local"})`
+    );
+    connection.release();
+  } catch (error) {
+    console.error("❌ Error al conectar a MySQL:", error.message);
+  }
+})();
+
+export default pool;

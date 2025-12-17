@@ -1,70 +1,60 @@
-import { useEffect } from "react";
-import TaskCard from "../components/TaskCard";
-import { useTasks } from "../context/TaskProvider";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTasks } from "../context/TaskProvider";
+import TaskCard from "../components/TaskCard";
+import SearchBar from "../components/SearchBar";
 
 function TasksPage() {
   const { tasks, loadTasks } = useTasks();
   const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
+  const isLibrarian = user?.role === "librarian";
 
   useEffect(() => {
     loadTasks();
   }, []);
 
-  if (!Array.isArray(tasks)) {
-    return (
-      <p className="text-center text-stone-600">
-        No hay libros cargados en este momento.
-      </p>
-    );
-  }
-
-  const total = tasks.length;
-  const prestados = tasks.filter((t) => Number(t.done) === 1).length;
-  const disponibles = total - prestados;
-  const isLibrarian = user?.role === "librarian";
+  // 🔒 FILTRO SEGURO
+  const filtered = tasks.filter((t) => {
+    const title = t?.title || "";
+    return title.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Título */}
-      <h1 className="text-3xl md:text-4xl font-extrabold text-amber-800 text-center tracking-wide">
-        {isLibrarian ? "Gestión de libros" : "Libros de la biblioteca"}
-      </h1>
+    <div className="max-w-4xl mx-auto">
+      {/* HEADER + BOTÓN */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold text-amber-900 dark:text-amber-400">
+          Libros
+        </h1>
 
-      {/* Dashboard solo para bibliotecario */}
-      {isLibrarian && (
-        <section className="grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
-          <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-stone-500 uppercase tracking-wide">
-              Libros totales
-            </p>
-            <p className="text-2xl font-bold text-amber-800">{total}</p>
-          </div>
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-stone-500 uppercase tracking-wide">
-              Disponibles
-            </p>
-            <p className="text-2xl font-bold text-emerald-700">
-              {disponibles}
-            </p>
-          </div>
-          <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs text-stone-500 uppercase tracking-wide">
-              Prestados
-            </p>
-            <p className="text-2xl font-bold text-rose-600">{prestados}</p>
-          </div>
-        </section>
-      )}
+        {isLibrarian && (
+          <button
+            onClick={() => navigate("/books/new")}
+            className="
+        bg-amber-600 hover:bg-amber-700
+        text-white font-semibold
+        px-4 py-2 rounded-lg
+        transition
+      "
+          >
+            + Agregar libro
+          </button>
+        )}
+      </div>
 
-      {/* Mensaje cuando no hay libros */}
-      {tasks.length === 0 ? (
-        <p className="text-center text-stone-600 mt-6">
-          Aún no hay libros registrados en la biblioteca.
-        </p>
+      {/* BUSCADOR */}
+      <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+
+      {/* LISTADO */}
+      {filtered.length === 0 ? (
+        <p className="text-slate-500 mt-6">No se encontraron libros.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-          {tasks.map((task) => (
+       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-5">
+          {filtered.map((task) => (
             <TaskCard key={task.id} task={task} />
           ))}
         </div>

@@ -1,22 +1,23 @@
 import { Router } from "express";
+import upload from "../middlewares/upload.js";
 import {
-  getTask,
   getTasks,
-  createTasks,
-  deleteTasks,
-  updateTasks,
+  getTask,
+  createTask,
+  updateTask,
+  deleteTask,
+  toggleTask,
 } from "../controllers/tasks.controllers.js";
 
-const router= Router();
+const router = Router();
 
 router.get("/tasks", getTasks);
-
 router.get("/tasks/:id", getTask);
 
-router.post("/tasks", createTasks);
+router.post("/tasks", upload.single("image"), createTask);
+router.put("/tasks/:id", upload.single("image"), updateTask);
 
-router.put("/tasks/:id", updateTasks);
-
-router.delete("/tasks/:id", deleteTasks);
+router.delete("/tasks/:id", deleteTask);
+router.put("/tasks/:id/toggle", toggleTask);
 
 export default router;

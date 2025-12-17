@@ -5,7 +5,7 @@ export const login = async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      "SELECT id, username AS name, role FROM users WHERE username = ? AND password = ?",
+      "SELECT id, name, role FROM users WHERE name = ? AND password = ?",
       [name, password]
     );
 

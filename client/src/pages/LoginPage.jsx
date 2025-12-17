@@ -3,66 +3,115 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, error, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ name: "", password: "" });
-  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    password: "",
+  });
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  // ✅ FALTABA ESTO
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await login(form.name, form.password);
-      navigate("/");
-    } catch (err) {
-      setError("Usuario o contraseña incorrectos");
+      const user = await login(form);
+
+      // 🔁 Redirección según rol
+      if (user.role === "librarian") {
+        navigate("/dashboard");
+      } else {
+        navigate("/books");
+      }
+    } catch {
+      // error ya manejado en AuthContext
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-100 to-emerald-100 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white/90 shadow-md p-6 rounded-xl w-full max-w-sm border border-sky-100"
-      >
-        <h1 className="text-3xl font-extrabold text-center text-sky-700 mb-6 tracking-wide">
-          Iniciar Sesión
+    <div className="min-h-screen flex items-center justify-center bg-[#f4e8d1] dark:bg-slate-900 px-4">
+      <div className="w-full max-w-md bg-white dark:bg-slate-700 rounded-2xl shadow-xl p-8">
+        {/* Título */}
+        <h1 className="text-3xl font-bold text-center mb-2 text-amber-800 dark:text-amber-400">
+          Biblioteca Escolar
         </h1>
 
-        {error && (
-          <p className="text-red-500 text-center mb-2">{error}</p>
-        )}
+        <p className="text-center text-slate-500 dark:text-slate-300 mb-6">
+          Inicia sesión para continuar
+        </p>
 
-        <label className="block font-medium text-slate-700 mb-1">
-          Usuario
-        </label>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full p-2 border rounded-lg bg-sky-50 mb-3 outline-none focus:ring-2 focus:ring-sky-300"
-          placeholder="Ingresa tu usuario"
-        />
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Usuario */}
+          <input
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="Usuario"
+            inputMode="text"
+            autoComplete="username"
+            className="
+              w-full px-4 py-2 rounded-lg border
+              bg-white dark:bg-slate-800
+              text-slate-900 dark:text-white
+              placeholder-slate-400 dark:placeholder-slate-400
+              border-slate-300 dark:border-slate-600
+              focus:outline-none focus:ring-2 focus:ring-amber-500
+            "
+          />
 
-        <label className="block font-medium text-slate-700 mb-1">
-          Contraseña
-        </label>
-        <input
-          name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full p-2 border rounded-lg bg-sky-50 mb-5 outline-none focus:ring-2 focus:ring-sky-300"
-          placeholder="Ingresa tu contraseña"
-        />
+          {/* Contraseña */}
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Contraseña"
+            autoComplete="current-password"
+            className="
+              w-full px-4 py-2 rounded-lg border
+              bg-white dark:bg-slate-800
+              text-slate-900 dark:text-white
+              placeholder-slate-400 dark:placeholder-slate-400
+              border-slate-300 dark:border-slate-600
+              focus:outline-none focus:ring-2 focus:ring-amber-500
+            "
+          />
 
-        <button className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg shadow-sm font-semibold transition">
-          Entrar
-        </button>
-      </form>
+          {/* Error */}
+          {error && (
+            <p className="text-red-500 text-sm text-center">
+              Usuario o contraseña incorrectos
+            </p>
+          )}
+
+          {/* Botón */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="
+              w-full py-2 rounded-lg font-semibold text-white
+              bg-amber-700 hover:bg-amber-800
+              disabled:opacity-50 disabled:cursor-not-allowed
+              transition
+            "
+          >
+            {loading ? "Ingresando..." : "Ingresar"}
+          </button>
+        </form>
+
+        {/* Footer */}
+        <p className="mt-6 text-xs text-center text-slate-400">
+          © 2025 Biblioteca Escolar
+        </p>
+      </div>
     </div>
   );
 }

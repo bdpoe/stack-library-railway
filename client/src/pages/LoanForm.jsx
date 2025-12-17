@@ -1,168 +1,180 @@
 // src/pages/LoanForm.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   createLoanRequest,
   getLoanRequest,
   updateLoanRequest,
 } from "../api/loans.api";
 
-function LoanForm() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+import {
+  getAvailableTasksRequest,
+  toggleTaskRequest,
+} from "../api/tasks.api";
 
-  const [form, setForm] = useState({
+function LoanForm() {
+  const navigate = useNavigate();
+  const params = useParams();
+
+  const [loading, setLoading] = useState(false);
+  const [books, setBooks] = useState([]);
+
+  const [loan, setLoan] = useState({
+    bookId: "",
     bookTitle: "",
     studentName: "",
     startDate: "",
     endDate: "",
-    status: "activo",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(!!id);
+  const cleanDate = (date) => (date ? date.split("T")[0] : "");
 
   useEffect(() => {
-    const loadLoan = async () => {
-      if (!id) return;
-      try {
-        setLoadingData(true);
-        const res = await getLoanRequest(id);
-        const data = res.data || {};
-        setForm({
-          bookTitle: data.bookTitle || "",
-          studentName: data.studentName || "",
-          startDate: data.startDate ? data.startDate.slice(0, 10) : "",
-          endDate: data.endDate ? data.endDate.slice(0, 10) : "",
-          status: data.status || "activo",
-        });
-      } catch (error) {
-        console.error(error);
-        alert("No se pudo cargar el préstamo.");
-      } finally {
-        setLoadingData(false);
-      }
-    };
+    async function loadBooks() {
+      const res = await getAvailableTasksRequest();
+      setBooks(res.data || []);
+    }
+    loadBooks();
+  }, []);
 
+  useEffect(() => {
+    async function loadLoan() {
+      if (!params.id) return;
+      const res = await getLoanRequest(params.id);
+      const data = res.data;
+
+      setLoan({
+        bookId: data.bookId || "",
+        bookTitle: data.bookTitle || "",
+        studentName: data.studentName,
+        startDate: cleanDate(data.startDate),
+        endDate: cleanDate(data.endDate),
+      });
+    }
     loadLoan();
-  }, [id]);
+  }, [params.id]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setLoan({ ...loan, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      if (id) {
-        await updateLoanRequest(id, form);
+      if (params.id) {
+        await updateLoanRequest(params.id, loan);
       } else {
-        await createLoanRequest(form);
+        await createLoanRequest(loan);
+        await toggleTaskRequest(loan.bookId);
       }
       navigate("/loans");
-    } catch (error) {
-      console.error(error);
-      alert("Hubo un error al guardar el préstamo.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingData) {
-    return <p className="text-slate-600">Cargando datos del préstamo...</p>;
-  }
-
   return (
-    <section className="max-w-lg mx-auto bg-white rounded-xl shadow-sm p-6">
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">
-        {id ? "Editar préstamo" : "Nuevo préstamo"}
+    <div
+      className="
+        max-w-lg mx-auto
+        bg-white dark:bg-slate-800
+        p-6 rounded-xl shadow
+        border border-amber-300 dark:border-slate-700
+      "
+    >
+      <h1 className="text-3xl font-bold text-amber-900 dark:text-amber-400 mb-4">
+        {params.id ? "Editar Préstamo" : "Nuevo Préstamo"}
       </h1>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* LIBRO */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Título del libro
-          </label>
-          <input
-            type="text"
-            name="bookTitle"
-            value={form.bookTitle}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-          />
+          <label className="font-semibold dark:text-slate-200">Libro</label>
+          {params.id ? (
+            <input
+              value={loan.bookTitle}
+              disabled
+              className="w-full border p-2 rounded-lg bg-gray-100 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600"
+            />
+          ) : (
+            <select
+              name="bookId"
+              value={loan.bookId}
+              onChange={(e) => {
+                const selected = books.find(
+                  (b) => b.id === Number(e.target.value)
+                );
+                setLoan({
+                  ...loan,
+                  bookId: e.target.value,
+                  bookTitle: selected?.title || "",
+                });
+              }}
+              required
+              className="w-full border p-2 rounded-lg bg-white dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600"
+            >
+              <option value="">Seleccione un libro</option>
+              {books.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.title}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
+        {/* ALUMNO */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Nombre del estudiante
-          </label>
+          <label className="font-semibold dark:text-slate-200">Alumno</label>
           <input
-            type="text"
             name="studentName"
-            value={form.studentName}
+            value={loan.studentName}
             onChange={handleChange}
+            className="w-full border p-2 rounded-lg bg-white dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600"
             required
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Fecha de inicio
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              value={form.startDate}
-              onChange={handleChange}
-              required
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Fecha de devolución
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              value={form.endDate}
-              onChange={handleChange}
-              required
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-            />
-          </div>
+        {/* FECHAS */}
+        <div>
+          <label className="font-semibold dark:text-slate-200">
+            Fecha Préstamo
+          </label>
+          <input
+            type="date"
+            name="startDate"
+            value={loan.startDate}
+            onChange={handleChange}
+            className="w-full border p-2 rounded-lg bg-white dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600"
+            required
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Estado
+          <label className="font-semibold dark:text-slate-200">
+            Fecha Devolución
           </label>
-          <select
-            name="status"
-            value={form.status}
+          <input
+            type="date"
+            name="endDate"
+            value={loan.endDate}
             onChange={handleChange}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
-          >
-            <option value="activo">Activo</option>
-            <option value="devuelto">Devuelto</option>
-            <option value="atrasado">Atrasado</option>
-          </select>
+            className="w-full border p-2 rounded-lg bg-white dark:bg-slate-900 dark:text-slate-200 dark:border-slate-600"
+          />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-emerald-500 text-white font-semibold py-2 rounded-lg hover:bg-emerald-600 disabled:opacity-60"
+          className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-lg w-full transition"
         >
-          {loading ? "Guardando..." : "Guardar préstamo"}
+          {loading ? "Guardando..." : "Guardar"}
         </button>
       </form>
-    </section>
+    </div>
   );
 }
 

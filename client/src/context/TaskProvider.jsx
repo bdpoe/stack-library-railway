@@ -1,98 +1,113 @@
+// src/context/TaskProvider.jsx
 import { createContext, useContext, useState } from "react";
 import {
-  getTaskRequest,
-  deleteTaskRequest,
-  createTaskRequest,
   getTasksRequest,
+  getTaskRequest,
+  createTaskRequest,
   updateTaskRequest,
-  toggleTaskDoneRequest,
-} from "../api/tasks.api.js";
-import { TaskContext } from "./TaskContext";
+  deleteTaskRequest,
+  toggleTaskRequest, // ✅ NOMBRE CORRECTO
+} from "../api/tasks.api";
+
+// =====================
+// CONTEXTO
+// =====================
+const TaskContext = createContext();
 
 export const useTasks = () => {
   const context = useContext(TaskContext);
-  if (!context === undefined) {
-    throw new Error("useTasks must be used withim a TaskContextProvider");
+  if (!context) {
+    throw new Error("useTasks debe usarse dentro de un TaskContextProvider");
   }
   return context;
 };
 
-export const TaskContextProvider = ({ children }) => {
+// =====================
+// PROVIDER
+// =====================
+export function TaskContextProvider({ children }) {
   const [tasks, setTasks] = useState([]);
 
-  async function loadTasks() {
-    const response = await getTaskRequest();
-    setTasks(response.data);
-  }
-
-  const deleteTask = async (id) => {
+  // 🔹 Obtener TODOS los libros
+  const loadTasks = async () => {
     try {
-      const response = await deleteTaskRequest(id);
-      // mantener todas las tareas cuyo id sea diferente al id pasado
-      setTasks(tasks.filter((task) => task.id !== id)); //para que se automotice para que fluya al eliminar
-    } catch (error) {
-      console.log(error);
+      const res = await getTasksRequest();
+      setTasks(res.data);
+    } catch (err) {
+      console.error("❌ Error cargando libros:", err);
     }
   };
 
+  // 🔹 Obtener UN libro por ID
+  const getTask = async (id) => {
+    try {
+      const res = await getTaskRequest(id);
+      return res.data;
+    } catch (err) {
+      console.error("❌ Error obteniendo libro:", err);
+      return null;
+    }
+  };
+
+  // 🔹 Crear libro
   const createTask = async (task) => {
     try {
-      const response = await createTaskRequest(task);
-      console.log(response);
-    } catch (error) {
-      console.error(error);
+      const res = await createTaskRequest(task);
+      setTasks([...tasks, res.data]);
+      return res.data;
+    } catch (err) {
+      console.error("❌ Error creando libro:", err);
     }
   };
 
-  const getTasks = async (id) => {
+  // 🔹 Actualizar libro
+  const updateTask = async (id, newData) => {
     try {
-      const response = await getTasksRequest(id);
-      return response.data;
-    } catch (error) {
-      console.error(error);
+      const res = await updateTaskRequest(id, newData);
+      setTasks(tasks.map((t) => (t.id === id ? res.data : t)));
+      return res.data;
+    } catch (err) {
+      console.error("❌ Error actualizando libro:", err);
     }
   };
 
-  const updateTask = async (id, newfields) => {
+  // 🔹 Eliminar libro
+  const deleteTask = async (id) => {
     try {
-      const response = await updateTaskRequest(id, newfields);
-      console.log(response);
-    } catch (error) {
-      console.log(error);
+      await deleteTaskRequest(id);
+      setTasks(tasks.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error("❌ Error eliminando libro:", err);
     }
   };
 
+  // 🔹 Cambiar estado Prestado / Disponible
   const toggleTaskDone = async (id) => {
-    //actualizacion
     try {
-      const taskFound = tasks.find((task) => task.id === id);
-      await toggleTaskDoneRequest(id, taskFound.done === 0 ? true : false);
-      if (!Array.isArray(tasks)) return;
-
-      setTasks(
-        tasks.map((task) =>
-          task.id === id ? (task.done = task.done === 0 ? 1 : 0) : task.done
-        )
-      );
-      setTasks([...tasks]);
-    } catch (error) {
-      console.error(error);
+      const res = await toggleTaskRequest(id); // ✅ CORRECTO
+      setTasks(tasks.map((t) => (t.id === id ? res.data : t)));
+      return res.data;
+    } catch (err) {
+      console.error("❌ Error cambiando estado del libro:", err);
     }
   };
 
+  // =====================
+  // CONTEXTO EXPORTADO
+  // =====================
   return (
     <TaskContext.Provider
       value={{
         tasks,
         loadTasks,
-        deleteTask,
+        getTask,
         createTask,
-        getTasks,
         updateTask,
+        deleteTask,
         toggleTaskDone,
       }}
     >
       {children}
     </TaskContext.Provider>
   );
-};
+}
