@@ -1,4 +1,4 @@
-import { pool } from "../db.js";
+import  pool  from "../db.js";
 
 export const login = async (req, res) => {
   const { name, password } = req.body;  // "name" viene del frontend

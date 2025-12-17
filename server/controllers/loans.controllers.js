@@ -1,4 +1,4 @@
-import { pool } from "../db.js";
+import  pool  from "../db.js";
 
 // GET ALL LOANS
 export const getLoans = async (req, res) => {

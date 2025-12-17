@@ -1,4 +1,4 @@
-import { pool } from "../db.js";
+import  pool  from "../db.js";
 import cloudinary from "../cloudinary.js";
 
 // 📌 OBTENER TODOS LOS LIBROS
