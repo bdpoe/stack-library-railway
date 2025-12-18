@@ -6,9 +6,7 @@ import cloudinary from "../cloudinary.js";
 =========================== */
 export const getTasks = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM tasks ORDER BY id DESC"
-    );
+    const [rows] = await pool.query("SELECT * FROM tasks ORDER BY id DESC");
     res.json(rows);
   } catch (error) {
     console.error(error);
@@ -21,10 +19,9 @@ export const getTasks = async (req, res) => {
 =========================== */
 export const getTask = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT * FROM tasks WHERE id = ?",
-      [req.params.id]
-    );
+    const [rows] = await pool.query("SELECT * FROM tasks WHERE id = ?", [
+      req.params.id,
+    ]);
 
     if (rows.length === 0) {
       return res.status(404).json({ message: "Libro no encontrado" });
@@ -44,10 +41,8 @@ export const createTask = async (req, res) => {
     const { title, description } = req.body;
     let imageUrl = null;
 
-    // 🔢 Generar ID manual
-    const [rows] = await pool.query(
-      "SELECT MAX(id) AS maxId FROM tasks"
-    );
+    // 🔢 Generar ID manual (porque no hay AUTO_INCREMENT)
+    const [rows] = await pool.query("SELECT MAX(id) AS maxId FROM tasks");
     const nextId = (rows[0].maxId || 0) + 1;
 
     // ☁️ Subir imagen SOLO si existe y Cloudinary está configurado
@@ -57,15 +52,27 @@ export const createTask = async (req, res) => {
       process.env.CLOUDINARY_CLOUD_NAME
     ) {
       const result = await cloudinary.uploader.upload(
-        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+          "base64"
+        )}`,
         { folder: "biblioteca" }
       );
       imageUrl = result.secure_url;
     }
 
+    // ✅ INSERT COMPLETO (incluye available)
     await pool.query(
-      "INSERT INTO tasks (id, title, description, image, done) VALUES (?, ?, ?, ?, ?)",
-      [nextId, title, description, imageUrl, 0]
+      `INSERT INTO tasks 
+        (id, title, description, image, done, available)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        nextId,
+        title,
+        description,
+        imageUrl,
+        0, // done
+        1, // available (disponible por defecto)
+      ]
     );
 
     res.json({
@@ -74,6 +81,7 @@ export const createTask = async (req, res) => {
       description,
       image: imageUrl,
       done: 0,
+      available: 1,
     });
   } catch (error) {
     console.error("❌ Error creando libro:", error);
@@ -95,7 +103,9 @@ export const updateTask = async (req, res) => {
       process.env.CLOUDINARY_CLOUD_NAME
     ) {
       const result = await cloudinary.uploader.upload(
-        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString(
+          "base64"
+        )}`,
         { folder: "biblioteca" }
       );
       imageUrl = result.secure_url;
@@ -104,15 +114,14 @@ export const updateTask = async (req, res) => {
     const fields = { title, description };
     if (imageUrl) fields.image = imageUrl;
 
-    await pool.query(
-      "UPDATE tasks SET ? WHERE id = ?",
-      [fields, req.params.id]
-    );
+    await pool.query("UPDATE tasks SET ? WHERE id = ?", [
+      fields,
+      req.params.id,
+    ]);
 
-    const [rows] = await pool.query(
-      "SELECT * FROM tasks WHERE id = ?",
-      [req.params.id]
-    );
+    const [rows] = await pool.query("SELECT * FROM tasks WHERE id = ?", [
+      req.params.id,
+    ]);
 
     res.json(rows[0]);
   } catch (error) {
@@ -126,10 +135,7 @@ export const updateTask = async (req, res) => {
 =========================== */
 export const deleteTask = async (req, res) => {
   try {
-    await pool.query(
-      "DELETE FROM tasks WHERE id = ?",
-      [req.params.id]
-    );
+    await pool.query("DELETE FROM tasks WHERE id = ?", [req.params.id]);
     res.sendStatus(204);
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar libro" });
@@ -141,22 +147,20 @@ export const deleteTask = async (req, res) => {
 =========================== */
 export const toggleTask = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      "SELECT done FROM tasks WHERE id = ?",
-      [req.params.id]
-    );
+    const [rows] = await pool.query("SELECT done FROM tasks WHERE id = ?", [
+      req.params.id,
+    ]);
 
     const newValue = rows[0].done === 1 ? 0 : 1;
 
-    await pool.query(
-      "UPDATE tasks SET done = ? WHERE id = ?",
-      [newValue, req.params.id]
-    );
+    await pool.query("UPDATE tasks SET done = ? WHERE id = ?", [
+      newValue,
+      req.params.id,
+    ]);
 
-    const [updated] = await pool.query(
-      "SELECT * FROM tasks WHERE id = ?",
-      [req.params.id]
-    );
+    const [updated] = await pool.query("SELECT * FROM tasks WHERE id = ?", [
+      req.params.id,
+    ]);
 
     res.json(updated[0]);
   } catch (error) {
