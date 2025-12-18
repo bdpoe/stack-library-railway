@@ -1,4 +1,3 @@
-// src/api/tasks.api.js
 import axios from "axios";
 
 const API = import.meta.env.VITE_API_URL;
@@ -7,15 +6,19 @@ const API = import.meta.env.VITE_API_URL;
 export const getTasksRequest = () =>
   axios.get(`${API}/tasks`);
 
+// 👉 NECESARIA PARA LoanForm.jsx
+export const getAvailableTasksRequest = () =>
+  axios.get(`${API}/tasks?available=true`);
+
 // Obtener libro por ID
 export const getTaskRequest = (id) =>
   axios.get(`${API}/tasks/${id}`);
 
-// Crear libro (FORMDATA ✔)
+// Crear libro (FormData)
 export const createTaskRequest = (formData) =>
   axios.post(`${API}/tasks`, formData);
 
-// Actualizar libro (FORMDATA ✔)
+// Actualizar libro (FormData)
 export const updateTaskRequest = (id, formData) =>
   axios.put(`${API}/tasks/${id}`, formData);
 
