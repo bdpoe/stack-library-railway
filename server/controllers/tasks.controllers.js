@@ -1,7 +1,9 @@
 import pool from "../db.js";
 import cloudinary from "../cloudinary.js";
 
-// 📌 OBTENER TODOS LOS LIBROS
+/* ===========================
+   OBTENER TODOS LOS LIBROS
+=========================== */
 export const getTasks = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -14,7 +16,9 @@ export const getTasks = async (req, res) => {
   }
 };
 
-// 📌 OBTENER UN LIBRO
+/* ===========================
+   OBTENER UN LIBRO
+=========================== */
 export const getTask = async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -32,16 +36,25 @@ export const getTask = async (req, res) => {
   }
 };
 
-// 📌 CREAR LIBRO (CON O SIN IMAGEN)
+/* ===========================
+   CREAR LIBRO (ID MANUAL)
+=========================== */
 export const createTask = async (req, res) => {
   try {
     const { title, description } = req.body;
     let imageUrl = null;
 
-    // ✅ SOLO subir imagen si TODO está configurado
+    // 🔢 Generar ID manual
+    const [rows] = await pool.query(
+      "SELECT MAX(id) AS maxId FROM tasks"
+    );
+    const nextId = (rows[0].maxId || 0) + 1;
+
+    // ☁️ Subir imagen SOLO si existe y Cloudinary está configurado
     if (
       req.file &&
-      process.env.CLOUDINARY_API_KEY
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_CLOUD_NAME
     ) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
@@ -50,13 +63,13 @@ export const createTask = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    const [resultDb] = await pool.query(
-      "INSERT INTO tasks (title, description, image, done) VALUES (?, ?, ?, 0)",
-      [title, description, imageUrl]
+    await pool.query(
+      "INSERT INTO tasks (id, title, description, image, done) VALUES (?, ?, ?, ?, ?)",
+      [nextId, title, description, imageUrl, 0]
     );
 
     res.json({
-      id: resultDb.insertId,
+      id: nextId,
       title,
       description,
       image: imageUrl,
@@ -68,7 +81,9 @@ export const createTask = async (req, res) => {
   }
 };
 
-// 📌 ACTUALIZAR LIBRO
+/* ===========================
+   ACTUALIZAR LIBRO
+=========================== */
 export const updateTask = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -76,7 +91,8 @@ export const updateTask = async (req, res) => {
 
     if (
       req.file &&
-      process.env.CLOUDINARY_API_KEY
+      process.env.CLOUDINARY_API_KEY &&
+      process.env.CLOUDINARY_CLOUD_NAME
     ) {
       const result = await cloudinary.uploader.upload(
         `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
@@ -105,7 +121,9 @@ export const updateTask = async (req, res) => {
   }
 };
 
-// 📌 ELIMINAR LIBRO
+/* ===========================
+   ELIMINAR LIBRO
+=========================== */
 export const deleteTask = async (req, res) => {
   try {
     await pool.query(
@@ -118,7 +136,9 @@ export const deleteTask = async (req, res) => {
   }
 };
 
-// 📌 PRESTADO / DISPONIBLE
+/* ===========================
+   TOGGLE PRESTADO / DISPONIBLE
+=========================== */
 export const toggleTask = async (req, res) => {
   try {
     const [rows] = await pool.query(
