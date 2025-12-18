@@ -7,26 +7,22 @@ const API = import.meta.env.VITE_API_URL;
 export const getTasksRequest = () =>
   axios.get(`${API}/tasks`);
 
-// Obtener solo libros disponibles
-export const getAvailableTasksRequest = () =>
-  axios.get(`${API}/tasks?available=true`);
-
-// Crear libro
-export const createTaskRequest = (task) =>
-  axios.post(`${API}/tasks`, task);
-
 // Obtener libro por ID
 export const getTaskRequest = (id) =>
   axios.get(`${API}/tasks/${id}`);
 
-// Actualizar libro
-export const updateTaskRequest = (id, task) =>
-  axios.put(`${API}/tasks/${id}`, task);
+// Crear libro (FORMDATA ✔)
+export const createTaskRequest = (formData) =>
+  axios.post(`${API}/tasks`, formData);
+
+// Actualizar libro (FORMDATA ✔)
+export const updateTaskRequest = (id, formData) =>
+  axios.put(`${API}/tasks/${id}`, formData);
 
 // Eliminar libro
 export const deleteTaskRequest = (id) =>
   axios.delete(`${API}/tasks/${id}`);
 
-// 🔁 CAMBIAR ESTADO (PRESTADO / DISPONIBLE)
+// Cambiar estado (prestado / disponible)
 export const toggleTaskRequest = (id) =>
   axios.put(`${API}/tasks/${id}/toggle`);
