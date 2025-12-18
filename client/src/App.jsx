@@ -189,7 +189,7 @@ function App() {
               </main>
 
               <footer className="text-center py-4 text-slate-500 text-xs md:text-sm border-t bg-white/10 backdrop-blur">
-                Biblioteca Escolar © 2025
+                JUMAJECAY - FERRETERIA TOÑITO TODA LA VIDA
               </footer>
             </div>
           </UIProvider>
