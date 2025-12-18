@@ -11,6 +11,9 @@ export const useAuth = () => {
   return context;
 };
 
+// ✅ URL desde variables de entorno (Vite)
+const API = import.meta.env.VITE_API_URL;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,11 +25,10 @@ export function AuthProvider({ children }) {
 
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/login",
+        `${API}/login`,
         credentials
       );
 
-      // 👇 CLAVE: el backend devuelve directamente el usuario
       setUser(res.data);
       return res.data;
 
