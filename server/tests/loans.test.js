@@ -1,6 +1,6 @@
 import request from "supertest";
 import app, { server } from "../index.js";
-import { pool } from "../db.js";
+import  pool  from "../db.js";
 
 describe("Pruebas de préstamos (loans)", () => {
   let createdLoanId;

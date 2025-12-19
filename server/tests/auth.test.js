@@ -1,6 +1,6 @@
 import request from "supertest";
 import app, { server } from "../index.js";
-import { pool } from "../db.js";
+import  pool  from "../db.js";
 
 // Usuarios existentes en tu BD:
 // librarian → bibliotecario1 / 1234
