@@ -1,17 +1,17 @@
-// src/components/TaskCard.jsx
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTasks } from "../context/TaskProvider";
 import { useAuth } from "../context/AuthContext";
 import { useUI } from "../context/UIContext";
 
-function TaskCard({ task }) {
+function TaskCard({ task, onSelect }) {
   const { deleteTask, toggleTaskDone } = useTasks();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showSuccess, showError } = useUI();
 
   const isLibrarian = user?.role === "librarian";
+  const isStudent = user?.role === "student";
 
   const isPrestado = task.done === 1;
   const statusText = isPrestado ? "Prestado" : "Disponible";
@@ -41,13 +41,20 @@ function TaskCard({ task }) {
     }
   };
 
+  const handleStudentClick = () => {
+    if (isStudent && onSelect) {
+      onSelect(task);
+    }
+  };
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.2 }}
-      className="
+      onClick={handleStudentClick}
+      className={`
         bg-white dark:bg-slate-900
         rounded-2xl
         border border-slate-200 dark:border-slate-700
@@ -55,7 +62,8 @@ function TaskCard({ task }) {
         transition-all duration-200
         overflow-hidden
         flex flex-col
-      "
+        ${isStudent ? "cursor-pointer hover:ring-2 hover:ring-amber-400" : ""}
+      `}
     >
       {/* 🖼️ PORTADA */}
       {task.image ? (
@@ -99,25 +107,34 @@ function TaskCard({ task }) {
             Registrado: {task.createdAt}
           </span>
 
-          {/* BOTONES SOLO BIBLIOTECARIO */}
+          {/* 🔐 BOTONES SOLO BIBLIOTECARIO */}
           {isLibrarian && (
             <div className="flex gap-1">
               <button
-                onClick={handleDelete}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 className="flex-1 bg-rose-500 hover:bg-rose-600 text-white text-[10px] py-1 rounded-md"
               >
                 Eliminar
               </button>
 
               <button
-                onClick={() => navigate(`/books/edit/${task.id}`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/books/edit/${task.id}`);
+                }}
                 className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] py-1 rounded-md"
               >
                 Editar
               </button>
 
               <button
-                onClick={handleToggle}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggle();
+                }}
                 className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] py-1 rounded-md"
               >
                 {isPrestado ? "Disponible" : "Prestar"}
