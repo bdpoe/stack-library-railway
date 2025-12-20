@@ -53,7 +53,7 @@ function TaskCard({ task }) {
           bg-white dark:bg-slate-900
           rounded-2xl
           border border-slate-200 dark:border-slate-700
-          shadow-sm hover:shadow-lg
+          shadow-sm hover:shadow-md
           transition
           overflow-hidden
           flex flex-col
@@ -66,7 +66,12 @@ function TaskCard({ task }) {
           <img
             src={task.image}
             alt={task.title}
-            className="w-full aspect-[3/4] object-contain bg-slate-100 dark:bg-slate-800 p-2"
+            className="
+              w-full aspect-[3/4]
+              object-contain
+              bg-slate-100 dark:bg-slate-800
+              p-2
+            "
           />
         ) : (
           <div className="aspect-[3/4] flex items-center justify-center text-slate-400">
@@ -77,7 +82,13 @@ function TaskCard({ task }) {
         {/* CONTENIDO */}
         <div className="p-4 flex flex-col flex-grow">
           <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-semibold line-clamp-2">
+            <h3
+              className="
+                text-sm font-semibold
+                text-slate-800 dark:text-slate-100
+                line-clamp-2
+              "
+            >
               {task.title}
             </h3>
 
@@ -88,7 +99,13 @@ function TaskCard({ task }) {
             </span>
           </div>
 
-          <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3">
+          <p
+            className="
+              text-xs
+              text-slate-600 dark:text-slate-300
+              line-clamp-3
+            "
+          >
             {task.description}
           </p>
 
@@ -100,7 +117,7 @@ function TaskCard({ task }) {
                   e.stopPropagation();
                   handleDelete();
                 }}
-                className="flex-1 bg-rose-500 text-white text-[10px] py-1 rounded"
+                className="flex-1 bg-rose-500 hover:bg-rose-600 text-white text-[10px] py-1 rounded"
               >
                 Eliminar
               </button>
@@ -110,7 +127,7 @@ function TaskCard({ task }) {
                   e.stopPropagation();
                   navigate(`/books/edit/${task.id}`);
                 }}
-                className="flex-1 bg-amber-600 text-white text-[10px] py-1 rounded"
+                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] py-1 rounded"
               >
                 Editar
               </button>
@@ -120,7 +137,7 @@ function TaskCard({ task }) {
                   e.stopPropagation();
                   handleToggle();
                 }}
-                className="flex-1 bg-emerald-600 text-white text-[10px] py-1 rounded"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] py-1 rounded"
               >
                 {isPrestado ? "Disponible" : "Prestar"}
               </button>
