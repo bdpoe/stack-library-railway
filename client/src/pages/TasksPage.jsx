@@ -30,7 +30,13 @@ function TasksPage() {
     <div className="max-w-4xl mx-auto">
       {/* HEADER + BOTÓN */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-bold text-amber-900 dark:text-amber-400">
+        <h1
+          className="
+  text-4xl font-bold
+  text-slate-800
+  dark:text-amber-400
+"
+        >
           Libros
         </h1>
 

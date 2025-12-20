@@ -25,6 +25,7 @@ function Navbar() {
   const { toggleColorMode } = useColorMode();
 
   const isDark = theme.palette.mode === "dark";
+  const isLibrarian = user?.role === "librarian";
 
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -44,17 +45,17 @@ function Navbar() {
         backdropFilter: "blur(12px)",
         backgroundColor:
           theme.palette.mode === "light"
-            ? "rgba(255, 255, 255, 0.9)"
+            ? "rgba(255, 255, 255, 0.95)"
             : "rgba(15, 23, 42, 0.9)",
       }}
     >
       <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
-        {/* Izquierda: logo + título */}
+        {/* IZQUIERDA */}
         <Stack direction="row" alignItems="center" spacing={1}>
           <MenuBookIcon color="primary" />
           <Typography
             component={RouterLink}
-            to={user ? "/dashboard" : "/login"}
+            to={user ? "/books" : "/login"}
             variant="h6"
             sx={{
               textDecoration: "none",
@@ -66,23 +67,23 @@ function Navbar() {
           </Typography>
         </Stack>
 
-        {/* Centro: navegación */}
+        {/* CENTRO - NAVEGACIÓN */}
         {user && (
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ display: { xs: "none", sm: "flex" } }}
-          >
-            <Button
-              component={RouterLink}
-              to="/dashboard"
-              variant={isActive("/dashboard") ? "contained" : "text"}
-              color={isActive("/dashboard") ? "primary" : "inherit"}
-              size="small"
-            >
-              Dashboard
-            </Button>
+          <Stack direction="row" spacing={1} sx={{ display: { xs: "none", sm: "flex" } }}>
+            {/* SOLO BIBLIOTECARIO */}
+            {isLibrarian && (
+              <Button
+                component={RouterLink}
+                to="/dashboard"
+                variant={isActive("/dashboard") ? "contained" : "text"}
+                color={isActive("/dashboard") ? "primary" : "inherit"}
+                size="small"
+              >
+                Panel
+              </Button>
+            )}
 
+            {/* TODOS */}
             <Button
               component={RouterLink}
               to="/books"
@@ -93,34 +94,38 @@ function Navbar() {
               Libros
             </Button>
 
-            <Button
-              component={RouterLink}
-              to="/loans"
-              variant={isActive("/loans") ? "contained" : "text"}
-              color={isActive("/loans") ? "primary" : "inherit"}
-              size="small"
-            >
-              Préstamos
-            </Button>
+            {/* SOLO BIBLIOTECARIO */}
+            {isLibrarian && (
+              <Button
+                component={RouterLink}
+                to="/loans"
+                variant={isActive("/loans") ? "contained" : "text"}
+                color={isActive("/loans") ? "primary" : "inherit"}
+                size="small"
+              >
+                Préstamos
+              </Button>
+            )}
           </Stack>
         )}
 
-        {/* Derecha: usuario + dark mode */}
+        {/* DERECHA */}
         <Stack direction="row" spacing={1} alignItems="center">
-          <Tooltip title={isDark ? "Cambiar a claro" : "Cambiar a oscuro"}>
+          <Tooltip title={isDark ? "Modo claro" : "Modo oscuro"}>
             <IconButton onClick={toggleColorMode} size="small">
               {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
           </Tooltip>
 
-          {user ? (
+          {user && (
             <>
               <Typography
                 variant="body2"
                 sx={{ display: { xs: "none", md: "block" } }}
               >
-                {user.name} · {user.role === "librarian" ? "Bibliotecario" : "Alumno"}
+                {user.name} · {isLibrarian ? "Bibliotecario" : "Alumno"}
               </Typography>
+
               <Button
                 size="small"
                 variant="outlined"
@@ -130,16 +135,6 @@ function Navbar() {
                 Cerrar sesión
               </Button>
             </>
-          ) : (
-            <Button
-              size="small"
-              variant="contained"
-              color="primary"
-              component={RouterLink}
-              to="/login"
-            >
-              Ingresar
-            </Button>
           )}
         </Stack>
       </Toolbar>
